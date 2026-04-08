@@ -2,13 +2,12 @@
 from typing import List, Dict
 from openai import OpenAI
 
-client = OpenAI()
-
 
 class EmbeddingGenerator:
     def __init__(self, model: str = "text-embedding-3-small", batch_size: int = 64):
         self.model = model
         self.batch_size = batch_size
+        self.client = OpenAI()
 
     def generate_embeddings(self, chunks: List[Dict]) -> List[Dict]:
         """
@@ -20,7 +19,7 @@ class EmbeddingGenerator:
             batch = chunks[i:i + self.batch_size]
             texts = [c["text"] for c in batch]
 
-            response = client.embeddings.create(
+            response = self.client.embeddings.create(
                 model=self.model,
                 input=texts
             )
