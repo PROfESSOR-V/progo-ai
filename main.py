@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Main script to run the complete RAG pipeline:
-1. Load PDF
+1. Load multiple document types
 2. Generate chunks
 3. Generate embeddings
 4. Store in Pinecone with chunk text metadata
@@ -11,7 +11,7 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from pdf_loader import load_pdf
+from document_loader import load_document
 from chunk_generator import ChunkGenerator
 from embedding_generator import EmbeddingGenerator
 
@@ -48,22 +48,13 @@ class RAGPipeline:
         
         print(f"✓ Connected to Pinecone index: {self.index_name}")
 
-    def process_pdf(self, pdf_path: str) -> dict:
-        """
-        Load PDF, generate chunks, and embeddings.
+    def process_document(self, file_path: str) -> dict:
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
         
-        Args:
-            pdf_path: Path to PDF file
-            
-        Returns:
-            Dictionary with processing results
-        """
-        if not Path(pdf_path).exists():
-            raise FileNotFoundError(f"PDF not found: {pdf_path}")
-        
-        print(f"\n📄 Loading PDF: {pdf_path}")
-        document = load_pdf(pdf_path)
-        print(f"   ✓ Extracted {document['page_count']} pages")
+        print(f"\n📄 Loading Document: {file_path}")
+        document = load_document(file_path)
+        print(f"   ✓ Extracted content from {document['source_type']}")
         
         print(f"\n📦 Generating chunks...")
         chunks = self.chunk_generator.generate_chunks(document)
@@ -79,20 +70,12 @@ class RAGPipeline:
             "embeddings": embeddings
         }
 
-    def store_in_pinecone(self, chunks: list, embeddings: list):
-        """
-        Store embeddings in Pinecone index with chunk text in metadata.
-        
-        Args:
-            chunks: List of chunk dictionaries
-            embeddings: List of embedding dictionaries
-        """
+    def store_in_pinecone(self, chunks: list, embeddings: list, user_id: str = "unknown", file_id: str = "unknown"):
         print(f"\n📤 Storing embeddings in Pinecone...")
         
-        # Create a lookup for chunks by ID
         chunks_by_id = {chunk["chunk_id"]: chunk for chunk in chunks}
-        
         vectors_to_upsert = []
+        
         for emb in embeddings:
             chunk_id = emb["chunk_id"]
             chunk = chunks_by_id.get(chunk_id, {})
@@ -101,11 +84,14 @@ class RAGPipeline:
                 chunk_id,
                 emb["embedding"],
                 {
+                    "user_id": user_id,
+                    "file_id": file_id,
                     "document_id": emb["document_id"],
                     "text": chunk.get("text", ""),
                     "page_start": chunk.get("page_start", 0),
                     "page_end": chunk.get("page_end", 0),
-                    "source_type": chunk.get("source_type", "unknown")
+                    "source_type": chunk.get("source_type", "unknown"),
+                    "source_name": chunk.get("source_name", "unknown")
                 }
             ))
         
@@ -117,35 +103,30 @@ class RAGPipeline:
             uploaded = min(i + batch_size, len(vectors_to_upsert))
             print(f"   ✓ Uploaded {uploaded}/{len(vectors_to_upsert)}")
 
-    def run(self, pdf_path: str):
-        """
-        Run the complete RAG pipeline.
-        
-        Args:
-            pdf_path: Path to PDF file
-        """
+    def run_directory(self, dir_path: str):
         try:
-            # Process PDF
-            results = self.process_pdf(pdf_path)
+            folder = Path(dir_path)
+            supported_exts = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.json']
             
-            # Store in Pinecone
-            self.store_in_pinecone(results["chunks"], results["embeddings"])
+            files_to_process = [f for f in folder.glob("**/*") if f.is_file() and f.suffix.lower() in supported_exts]
             
+            if not files_to_process:
+                print(f"No valid documents found in {dir_path}")
+                return
+            
+            print(f"Found {len(files_to_process)} valid documents to process.")
+            
+            for f in files_to_process:
+                try:
+                    results = self.process_document(str(f))
+                    self.store_in_pinecone(results["chunks"], results["embeddings"])
+                    print(f"✅ Processed {f.name} successfully.")
+                except Exception as ex:
+                    print(f"❌ Failed to process {f.name}: {ex}")
+
             print("\n" + "="*50)
             print("✅ RAG Pipeline Complete!")
             print("="*50)
-            print(f"\nDocument: {results['document']['source_name']}")
-            print(f"Pages: {results['document']['page_count']}")
-            print(f"Chunks: {len(results['chunks'])}")
-            print(f"Embeddings stored: {len(results['embeddings'])}")
-            print("\n" + "="*50)
-            print("🚀 Next Steps:")
-            print("="*50)
-            print("Run the query interface:\n")
-            print("  ./venv/bin/python3 query_interface.py")
-            print("\nOr ask a direct question:\n")
-            print("  ./venv/bin/python3 query_interface.py 'What is Order Push API?'")
-            print("="*50 + "\n")
             
         except Exception as e:
             print(f"\n❌ Error: {e}")
@@ -155,16 +136,30 @@ class RAGPipeline:
 
 
 def main():
-    """Main entry point."""
-    pdf_path = "/media/professor/New Volume/progo-ai/data/API Setup Guide.pdf"
-    
     print("\n" + "="*50)
-    print("🚀 RAG Pipeline with Pinecone")
+    print("🚀 Progo-AI Multi-Format RAG Pipeline")
     print("="*50)
     
-    # Initialize and run pipeline
     pipeline = RAGPipeline()
-    pipeline.run(pdf_path)
+    
+    if len(sys.argv) > 1:
+        target_path = sys.argv[1]
+        user_id = sys.argv[2] if len(sys.argv) > 2 else "unknown"
+        file_id = sys.argv[3] if len(sys.argv) > 3 else "unknown"
+        if os.path.isfile(target_path):
+            try:
+                results = pipeline.process_document(target_path)
+                pipeline.store_in_pinecone(results["chunks"], results["embeddings"], user_id, file_id)
+                print(f"✅ Processed {target_path} successfully.")
+            except Exception as e:
+                print(f"❌ Failed to process {target_path}: {e}")
+                sys.exit(1)
+        elif os.path.isdir(target_path):
+            pipeline.run_directory(target_path)
+    else:
+        # Default behavior
+        data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+        pipeline.run_directory(data_dir)
 
 
 if __name__ == "__main__":

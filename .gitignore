@@ -1,2 +1,40 @@
+# ===== Secrets =====
 .env
-venv
+*.env
+!.env.example
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== Node / Frontend =====
+node_modules/
+dist/
+.cache/
+
+# ===== Python =====
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Uploaded data =====
+data/

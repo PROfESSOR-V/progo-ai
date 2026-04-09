@@ -1,4 +1,3 @@
-# chunk_generator.py
 import uuid
 from typing import List, Dict
 import tiktoken
@@ -10,58 +9,50 @@ class ChunkGenerator:
         self.max_tokens = max_tokens
         self.overlap = overlap
 
-    def count_tokens(self, text: str) -> int:
-        return len(self.tokenizer.encode(text))
-
     def generate_chunks(self, document: Dict) -> List[Dict]:
         """
-        Convert document pages into token-bounded chunks.
+        Convert document pages into strict token-bounded chunks.
         """
         chunks: List[Dict] = []
-
-        buffer_text = ""
-        buffer_start_page = None
         document_id = document["document_id"]
+        source_type = document.get("source_type", "unknown")
+        source_name = document.get("source_name", "unknown")
 
-        for page in document["pages"]:
-            if buffer_start_page is None:
-                buffer_start_page = page["page_number"]
-
-            buffer_text += "\n" + page["text"]
-
-            token_count = self.count_tokens(buffer_text)
-
-            if token_count >= self.max_tokens:
-                chunk_text = buffer_text
-                chunk_id = str(uuid.uuid4())
-
+        all_tokens = []
+        token_to_page = []
+        
+        for page in document.get("pages", []):
+            page_text = page.get("text", "")
+            if not page_text.strip():
+                continue
+                
+            page_num = page.get("page_number", 1)
+            page_tokens = self.tokenizer.encode("\n\n" + page_text)
+            
+            all_tokens.extend(page_tokens)
+            token_to_page.extend([page_num] * len(page_tokens))
+            
+        i = 0
+        while i < len(all_tokens):
+            end = min(i + self.max_tokens, len(all_tokens))
+            chunk_tokens = all_tokens[i:end]
+            
+            start_page = token_to_page[i] if i < len(token_to_page) else 1
+            end_page = token_to_page[end - 1] if end > 0 and (end - 1) < len(token_to_page) else start_page
+            
+            chunk_text = self.tokenizer.decode(chunk_tokens).strip()
+            if chunk_text:
                 chunks.append({
-                    "chunk_id": chunk_id,
+                    "chunk_id": str(uuid.uuid4()),
                     "document_id": document_id,
-                    "source_type": document["source_type"],
-                    "page_start": buffer_start_page,
-                    "page_end": page["page_number"],
-                    "text": chunk_text.strip(),
-                    "token_count": token_count
+                    "source_type": source_type,
+                    "source_name": source_name,
+                    "page_start": start_page,
+                    "page_end": end_page,
+                    "text": chunk_text,
+                    "token_count": len(chunk_tokens)
                 })
-
-                # overlap handling
-                tokens = self.tokenizer.encode(chunk_text)
-                overlap_tokens = tokens[-self.overlap:]
-                buffer_text = self.tokenizer.decode(overlap_tokens)
-                buffer_start_page = page["page_number"]
-
-        # flush remaining buffer
-        if buffer_text.strip():
-            chunk_id = str(uuid.uuid4())
-            chunks.append({
-                "chunk_id": chunk_id,
-                "document_id": document_id,
-                "source_type": document["source_type"],
-                "page_start": buffer_start_page,
-                "page_end": document["page_count"],
-                "text": buffer_text.strip(),
-                "token_count": self.count_tokens(buffer_text)
-            })
-
+            
+            i += (self.max_tokens - self.overlap)
+            
         return chunks
