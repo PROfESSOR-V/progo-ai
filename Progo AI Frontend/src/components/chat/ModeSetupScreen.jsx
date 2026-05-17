@@ -13,7 +13,7 @@ const modeConfig = {
     shadowColor: 'shadow-blue-500/20',
     type: 'file', // requires file upload
     placeholder: '',
-    buttonText: 'Upload & Start Session',
+    buttonText: 'Extract & Start Session',
   },
   interview: {
     icon: UserCheck,
@@ -64,7 +64,8 @@ export default function ModeSetupScreen({ mode, onSetupComplete, onFilesSelected
 
   const handleSubmit = () => {
     if (config.type === 'file') {
-      // For Q&A, files are handled externally
+      // For Q&A, App.jsx handles the actual upload, but we need to signal it to start
+      onSetupComplete('');
       return;
     }
     if (!textInput.trim()) return;
@@ -200,7 +201,7 @@ export default function ModeSetupScreen({ mode, onSetupComplete, onFilesSelected
           {isUploading ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Processing...
+              Vectorizing...
             </>
           ) : (
             <>
