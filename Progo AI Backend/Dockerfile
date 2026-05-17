@@ -27,10 +27,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy Python scripts and data directory
 COPY *.py ./
-# Create data dir if not exists (or copy if exists)
+# Create data dir if not exists
 RUN mkdir -p data
-# Copy data directory (it might contain initial structure if we moved it)
-COPY data/ ./data/
 
 # Copy Java built artifact from stage 1
 COPY --from=build /app/backend/target/*.jar backend.jar
