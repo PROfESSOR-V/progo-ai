@@ -10,6 +10,7 @@ import ChatInput from './components/chat/ChatInput';
 import FileUploadPanel from './components/files/FileUploadPanel';
 import ModeSelector from './components/common/ModeSelector';
 import ServerWakeupScreen from './components/common/ServerWakeupScreen';
+import LandingPage from './components/common/LandingPage';
 import { API_BASE_URL } from './api/client';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pendingFiles, setPendingFiles] = useState([]);
   const [isServerAwake, setIsServerAwake] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
 
   // Poll the backend health endpoint
   useEffect(() => {
@@ -134,8 +136,13 @@ export default function App() {
     return <ServerWakeupScreen />;
   }
 
+  // Show landing page if not authenticated and haven't clicked "Get Started"
+  if (!isAuthenticated && showLanding) {
+    return <LandingPage onGetStarted={() => setShowLanding(false)} />;
+  }
+
   // Show auth screen if not logged in
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !showLanding) {
     return <AuthScreen />;
   }
 
