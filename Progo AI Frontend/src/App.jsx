@@ -120,7 +120,7 @@ export default function App() {
           await uploadFiles(pendingFiles, mode);
           setPendingFiles([]);
           // After upload, send a starter message
-          await sendMessage('I have uploaded my documents. Please summarize what you can see in the context and let me know you are ready for questions.');
+          await sendMessage("I have uploaded my documents. Let's begin Q&A.");
         } catch {
           // Upload failed
         }
