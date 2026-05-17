@@ -91,19 +91,19 @@ export default function ModeSetupScreen({ mode, onSetupComplete, onFilesSelected
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-4 animate-fade-in overflow-y-auto py-10">
+    <div className="flex flex-col items-center justify-center h-full px-3 md:px-4 animate-fade-in overflow-y-auto py-6 md:py-10">
       {/* Mode Icon */}
       <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${config.gradient} flex items-center justify-center mb-6 shadow-xl ${config.shadowColor}`}>
         <Icon size={28} className="text-white" />
       </div>
 
-      <h1 className="text-2xl font-bold mb-2 tracking-tight">{config.title}</h1>
-      <p className="text-gray-500 max-w-lg mb-8 text-sm leading-relaxed text-center">
+      <h1 className="text-xl md:text-2xl font-bold mb-2 tracking-tight">{config.title}</h1>
+      <p className="text-gray-500 max-w-lg mb-6 md:mb-8 text-xs md:text-sm leading-relaxed text-center px-2">
         {config.subtitle}
       </p>
 
       {/* Setup Form */}
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-2xl px-1">
         {config.type === 'file' ? (
           /* File Upload UI for Q&A */
           <div className="space-y-4">

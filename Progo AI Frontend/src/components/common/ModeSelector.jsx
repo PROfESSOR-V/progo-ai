@@ -10,7 +10,7 @@ const modes = [
 
 export default function ModeSelector({ mode, onModeChange, disabled }) {
   return (
-    <div className="flex items-center gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/5">
+    <div className="flex items-center gap-0.5 md:gap-1 bg-white/[0.03] rounded-xl p-0.5 md:p-1 border border-white/5 overflow-x-auto scrollbar-hide shrink-0">
       {modes.map(m => {
         const Icon = m.icon;
         const isActive = mode === m.value;
@@ -19,7 +19,7 @@ export default function ModeSelector({ mode, onModeChange, disabled }) {
             key={m.value}
             onClick={() => onModeChange(m.value)}
             disabled={disabled}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40 ${
+            className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all disabled:opacity-40 whitespace-nowrap shrink-0 ${
               isActive
                 ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                 : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'

@@ -44,10 +44,10 @@ export default function ServerWakeupScreen() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-      <div className="relative z-10 flex flex-col items-center max-w-md w-full px-8">
+      <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6 md:px-8">
         
         {/* Orbital Animation Container */}
-        <div className="relative w-48 h-48 mb-12 flex items-center justify-center">
+        <div className="relative w-36 h-36 md:w-48 md:h-48 mb-8 md:mb-12 flex items-center justify-center">
           {/* Outer rotating ring (dashed) */}
           <div className="absolute inset-0 rounded-full border border-dashed border-blue-500/30 animate-[spin_10s_linear_infinite]"></div>
           
@@ -69,16 +69,16 @@ export default function ServerWakeupScreen() {
         </div>
 
         {/* Brand & Status Text */}
-        <h1 className="text-3xl font-light text-white mb-2 tracking-wide">
+        <h1 className="text-2xl md:text-3xl font-light text-white mb-2 tracking-wide">
           Progo <span className="font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">AI</span>
         </h1>
         
-        <p className="text-gray-400 text-sm h-6 mb-8 text-center animate-pulse tracking-wide">
+        <p className="text-gray-400 text-xs md:text-sm h-6 mb-6 md:mb-8 text-center animate-pulse tracking-wide">
           {loadingText}
         </p>
 
         {/* Progress Bar Container */}
-        <div className="w-full bg-white/5 rounded-full h-1.5 mb-8 overflow-hidden backdrop-blur-sm border border-white/5">
+        <div className="w-full bg-white/5 rounded-full h-1.5 mb-6 md:mb-8 overflow-hidden backdrop-blur-sm border border-white/5">
           <div 
             className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out relative"
             style={{ width: `${progress}%` }}
@@ -88,7 +88,7 @@ export default function ServerWakeupScreen() {
         </div>
 
         {/* Feature Highlights while waiting */}
-        <div className="grid grid-cols-3 gap-4 w-full">
+        <div className="grid grid-cols-3 gap-3 md:gap-4 w-full">
           <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
             <Sparkles className="w-5 h-5 text-blue-400 mb-2" />
             <span className="text-xs text-gray-400">Intelligent</span>

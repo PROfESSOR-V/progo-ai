@@ -10,9 +10,9 @@ export default function LandingPage({ onGetStarted }) {
       <div className="fixed bottom-0 right-0 w-full h-[500px] bg-purple-600/10 rounded-full blur-[150px] translate-y-1/2 pointer-events-none"></div>
       
       {/* Header */}
-      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-        <header className="pointer-events-auto flex items-center justify-between px-8 py-3 w-full max-w-5xl rounded-full backdrop-blur-xl bg-[#fff5ee]/10 border border-[#fff5ee]/20 shadow-[0_8px_32px_rgba(255,245,238,0.05)] text-[#fff5ee]">
-          <div className="text-2xl font-light tracking-wide cursor-default flex items-center gap-2">
+      <div className="fixed top-3 md:top-6 left-0 right-0 z-50 flex justify-center px-3 md:px-4 pointer-events-none">
+        <header className="pointer-events-auto flex items-center justify-between px-4 md:px-8 py-2.5 md:py-3 w-full max-w-5xl rounded-full backdrop-blur-xl bg-[#fff5ee]/10 border border-[#fff5ee]/20 shadow-[0_8px_32px_rgba(255,245,238,0.05)] text-[#fff5ee]">
+          <div className="text-lg md:text-2xl font-light tracking-wide cursor-default flex items-center gap-1.5 md:gap-2">
             Progo <span className="font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">AI</span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -22,50 +22,50 @@ export default function LandingPage({ onGetStarted }) {
           </nav>
           <button 
             onClick={onGetStarted}
-            className="text-sm font-medium text-white px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors border border-white/10 shadow-sm"
+            className="text-xs md:text-sm font-medium text-white px-4 md:px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors border border-white/10 shadow-sm"
           >
             Sign In
           </button>
         </header>
       </div>
 
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-start w-full pt-32 pb-24">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start w-full pt-24 md:pt-32 pb-16 md:pb-24">
         
         {/* --- Hero Section --- */}
-        <section className="flex flex-col items-center justify-center max-w-5xl mx-auto px-6 text-center mb-40 mt-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-indigo-400 mb-8 backdrop-blur-sm animate-fade-in-up">
+        <section className="flex flex-col items-center justify-center max-w-5xl mx-auto px-4 md:px-6 text-center mb-20 md:mb-40 mt-4 md:mt-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-indigo-400 mb-6 md:mb-8 backdrop-blur-sm animate-fade-in-up">
             <Sparkles className="w-3.5 h-3.5" />
             <span>The Future of AI-Powered Workflows</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.1] animate-fade-in-up" style={{animationDelay: '100ms'}}>
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 md:mb-8 leading-[1.1] animate-fade-in-up" style={{animationDelay: '100ms'}}>
             Extract Knowledge.<br/>
             <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">Accelerate Intelligence.</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl leading-relaxed font-light animate-fade-in-up" style={{animationDelay: '200ms'}}>
+          <p className="text-base md:text-xl text-gray-400 mb-8 md:mb-10 max-w-2xl leading-relaxed font-light animate-fade-in-up px-2" style={{animationDelay: '200ms'}}>
             Progo AI instantly processes your documents into a lightning-fast vector database. Ask complex questions, conduct mock interviews, and analyze code—all in one intelligent platform.
           </p>
-          <div className="flex items-center gap-4 animate-fade-in-up" style={{animationDelay: '300ms'}}>
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 animate-fade-in-up w-full sm:w-auto" style={{animationDelay: '300ms'}}>
             <button 
               onClick={onGetStarted}
-              className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-medium text-white bg-indigo-600 rounded-full overflow-hidden transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(99,102,241,0.4)]"
+              className="group relative inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-medium text-white bg-indigo-600 rounded-full overflow-hidden transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(99,102,241,0.4)] w-full sm:w-auto"
             >
               <span>Get Started for Free</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
-            <a href="#how-it-works" className="px-8 py-4 text-base font-medium text-gray-300 hover:text-white transition-colors">
+            <a href="#how-it-works" className="px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-medium text-gray-300 hover:text-white transition-colors">
               Learn More
             </a>
           </div>
         </section>
 
         {/* --- What & Why Section --- */}
-        <section id="features" className="w-full max-w-6xl mx-auto px-6 mb-40">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Progo AI?</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">We combine the power of advanced Retrieval-Augmented Generation (RAG) with a suite of specialized AI modes designed for professionals.</p>
+        <section id="features" className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-20 md:mb-40">
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold mb-4">Why Choose Progo AI?</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base px-2">We combine the power of advanced Retrieval-Augmented Generation (RAG) with a suite of specialized AI modes designed for professionals.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full">
             <div className="flex flex-col p-8 rounded-3xl bg-white/[0.02] border border-white/5 backdrop-blur-md hover:bg-white/[0.04] transition-all hover:-translate-y-1">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-6">
                 <FileText className="w-6 h-6 text-blue-400" />
@@ -99,11 +99,11 @@ export default function LandingPage({ onGetStarted }) {
         </section>
 
         {/* --- How it Works Section --- */}
-        <section id="how-it-works" className="w-full max-w-6xl mx-auto px-6 mb-40">
-          <div className="flex flex-col md:flex-row gap-16 items-center">
+        <section id="how-it-works" className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-20 md:mb-40">
+          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
             <div className="flex-1">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">How Progo AI Works</h2>
-              <p className="text-gray-400 mb-8 leading-relaxed">We've simplified the complexities of artificial intelligence into three intuitive steps. From raw data to actionable insights in seconds.</p>
+              <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">How Progo AI Works</h2>
+              <p className="text-gray-400 mb-6 md:mb-8 leading-relaxed text-sm md:text-base">We've simplified the complexities of artificial intelligence into three intuitive steps. From raw data to actionable insights in seconds.</p>
               
               <div className="space-y-8">
                 <div className="flex gap-4">
@@ -130,7 +130,7 @@ export default function LandingPage({ onGetStarted }) {
               </div>
             </div>
             
-            <div className="flex-1 w-full h-[400px] bg-gradient-to-tr from-white/[0.05] to-white/[0.01] rounded-3xl border border-white/10 flex items-center justify-center relative overflow-hidden">
+            <div className="flex-1 w-full h-[250px] md:h-[400px] bg-gradient-to-tr from-white/[0.05] to-white/[0.01] rounded-3xl border border-white/10 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]"></div>
               
               <div className="relative z-10 w-48 h-48 flex items-center justify-center">
@@ -143,12 +143,12 @@ export default function LandingPage({ onGetStarted }) {
         </section>
 
         {/* --- Future Innovations & AI Influence --- */}
-        <section className="w-full max-w-6xl mx-auto px-6 mb-40 relative">
+        <section className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-20 md:mb-40 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent rounded-3xl -z-10"></div>
-          <div className="p-12 border border-white/5 rounded-3xl">
-            <h2 className="text-3xl font-bold mb-12 text-center">The AI Influence & Future Roadmap</h2>
+          <div className="p-6 md:p-12 border border-white/5 rounded-3xl">
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 text-center">The AI Influence & Future Roadmap</h2>
             
-            <div className="grid md:grid-cols-2 gap-12">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
               <div>
                 <h3 className="text-xl font-semibold mb-6 flex items-center gap-3">
                   <TrendingUp className="text-emerald-400" />
@@ -187,13 +187,13 @@ export default function LandingPage({ onGetStarted }) {
         </section>
 
         {/* --- Pricing Structure --- */}
-        <section id="pricing" className="w-full max-w-5xl mx-auto px-6 mb-32">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Transparent Pricing</h2>
-            <p className="text-gray-400">Start for free, upgrade when you need more power.</p>
+        <section id="pricing" className="w-full max-w-5xl mx-auto px-4 md:px-6 mb-20 md:mb-32">
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold mb-4">Transparent Pricing</h2>
+            <p className="text-gray-400 text-sm md:text-base">Start for free, upgrade when you need more power.</p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
             <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition-colors flex flex-col">
               <div className="mb-8">
@@ -244,13 +244,13 @@ export default function LandingPage({ onGetStarted }) {
       </main>
       
       {/* Footer */}
-      <footer className="relative z-10 py-8 border-t border-white/5 text-center text-gray-500 text-sm flex flex-col md:flex-row items-center justify-between px-8 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-4 md:mb-0">
+      <footer className="relative z-10 py-6 md:py-8 border-t border-white/5 text-center text-gray-500 text-xs md:text-sm flex flex-col md:flex-row items-center justify-between px-4 md:px-8 max-w-7xl mx-auto w-full gap-3 md:gap-0">
+        <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-indigo-500" />
           <span className="font-semibold text-gray-300">Progo AI</span>
         </div>
         <p>&copy; {new Date().getFullYear()} Progo AI Inc. All rights reserved.</p>
-        <div className="flex gap-4 mt-4 md:mt-0">
+        <div className="flex gap-4">
           <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
           <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
         </div>

@@ -15,7 +15,7 @@ import { API_BASE_URL } from './api/client';
 
 export default function App() {
   const { isAuthenticated } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [pendingFiles, setPendingFiles] = useState([]);
   const [isServerAwake, setIsServerAwake] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
@@ -154,7 +154,11 @@ export default function App() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         sessions={sessions}
         currentSessionId={currentSessionId}
-        onSelectSession={selectSession}
+        onSelectSession={(id) => {
+          selectSession(id);
+          // Auto-close sidebar on mobile
+          if (window.innerWidth < 768) setSidebarOpen(false);
+        }}
         onNewChat={handleNewChat}
         onRename={renameSession}
         onDelete={deleteSession}
@@ -163,17 +167,17 @@ export default function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 shrink-0 bg-[#0d0d0d]/80 backdrop-blur-md z-10">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between px-3 md:px-4 py-2.5 border-b border-white/5 shrink-0 bg-[#0d0d0d]/80 backdrop-blur-md z-10">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors shrink-0"
               >
                 <PanelLeft size={18} />
               </button>
             )}
-            <h2 className="text-sm font-medium text-gray-300">
+            <h2 className="text-xs md:text-sm font-medium text-gray-300 truncate">
               {currentSessionId
                 ? sessions.find(s => s.id === currentSessionId)?.title || 'Chat'
                 : 'New Chat'}
@@ -215,7 +219,7 @@ export default function App() {
 
         {/* Input area — only show when messages exist (setup done) or in simple mode */}
         {(messages.length > 0 || mode === 'simple') && (
-          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0d0d0d] via-[#0d0d0d] to-transparent pt-8 pb-4 px-4">
+          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0d0d0d] via-[#0d0d0d] to-transparent pt-6 md:pt-8 pb-3 md:pb-4 px-3 md:px-4">
             <div className="max-w-3xl mx-auto">
               <ChatInput
                 onSend={handleSend}
