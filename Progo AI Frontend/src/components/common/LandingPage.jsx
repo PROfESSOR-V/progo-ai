@@ -3,7 +3,7 @@ import { Sparkles, Zap, ShieldCheck, ArrowRight, FileText, Cpu, MessageSquare, C
 
 export default function LandingPage({ onGetStarted }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-100 flex flex-col relative overflow-x-hidden selection:bg-indigo-500/30 scroll-smooth">
+    <div className="h-screen bg-[#0a0a0a] text-gray-100 flex flex-col relative overflow-y-auto overflow-x-hidden selection:bg-indigo-500/30 scroll-smooth">
       
       {/* Background Ambient Glows */}
       <div className="fixed top-0 left-0 w-full h-[500px] bg-blue-600/10 rounded-full blur-[150px] -translate-y-1/2 pointer-events-none"></div>
