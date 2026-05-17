@@ -19,6 +19,7 @@ public class ChatSession {
     private List<ChatMessage> messages = new ArrayList<>();
     private List<String> contextFiles = new ArrayList<>();
     private Map<String, Object> state = new HashMap<>();
+    private String setupContext; // Stores JD, quiz topic, code, etc.
 
     public ChatSession() {}
 
@@ -45,4 +46,6 @@ public class ChatSession {
     public void setContextFiles(List<String> contextFiles) { this.contextFiles = contextFiles; }
     public Map<String, Object> getState() { return state; }
     public void setState(Map<String, Object> state) { this.state = state; }
+    public String getSetupContext() { return setupContext; }
+    public void setSetupContext(String setupContext) { this.setupContext = setupContext; }
 }

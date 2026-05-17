@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ChatSessionRepository extends MongoRepository<ChatSession, String> {
     List<ChatSession> findAllByOrderByCreatedAtDesc();
+    List<ChatSession> findByUserIdOrderByCreatedAtDesc(String userId);
 }
