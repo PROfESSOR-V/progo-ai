@@ -473,15 +473,25 @@ public class RagService {
     }
 
     /**
-     * Auto-populate context files from the user's uploaded file metadata.
-     * This ensures that Q&A sessions always have access to the user's documents,
-     * even when the session is created separately from the upload.
+     * Auto-populate context files from the session's linked file metadata.
+     * Only loads files associated with this specific session, not ALL user files.
+     * Falls back to all user files only if no session-scoped files exist (backwards compat).
      */
     private void autoPopulateContextFiles(ChatSession session, String userId) {
         try {
-            List<FileMetadata> userFiles = fileMetadataRepository.findByUserId(userId);
-            if (userFiles != null && !userFiles.isEmpty()) {
-                List<String> fileNames = userFiles.stream()
+            List<FileMetadata> files;
+            
+            // First try session-scoped files
+            if (session.getId() != null) {
+                files = fileMetadataRepository.findByUserIdAndSessionId(userId, session.getId());
+            } else {
+                files = Collections.emptyList();
+            }
+            
+            // Fallback: if session has no files yet, don't pollute with ALL user files
+            // Only use session-specific files
+            if (files != null && !files.isEmpty()) {
+                List<String> fileNames = files.stream()
                     .map(FileMetadata::getFilename)
                     .distinct()
                     .collect(Collectors.toList());

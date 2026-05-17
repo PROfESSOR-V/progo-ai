@@ -67,28 +67,37 @@ export default function App() {
     fetchFiles,
     toggleContextFile,
     uploadFiles,
+    clearFiles,
   } = useFiles();
 
-  // Load sessions and files on auth
+  // Load sessions on auth
   useEffect(() => {
     if (isAuthenticated) {
       fetchSessions();
-      fetchFiles();
     }
-  }, [isAuthenticated, fetchSessions, fetchFiles]);
+  }, [isAuthenticated, fetchSessions]);
+
+  // Fetch session-specific files when the current session changes
+  useEffect(() => {
+    if (isAuthenticated && currentSessionId) {
+      fetchFiles(currentSessionId);
+    } else {
+      clearFiles();
+    }
+  }, [isAuthenticated, currentSessionId, fetchFiles, clearFiles]);
 
   const handleSend = useCallback(async (text) => {
     // If there are pending files, upload them first
     if (pendingFiles.length > 0) {
       try {
-        await uploadFiles(pendingFiles, mode);
+        await uploadFiles(pendingFiles, mode, currentSessionId);
         setPendingFiles([]);
       } catch {
         // Upload failed — still send the message
       }
     }
     await sendMessage(text);
-  }, [sendMessage, pendingFiles, uploadFiles, mode]);
+  }, [sendMessage, pendingFiles, uploadFiles, mode, currentSessionId]);
 
   const handleSuggestionClick = useCallback((text) => {
     handleSend(text);
@@ -105,7 +114,8 @@ export default function App() {
   const handleNewChat = useCallback(() => {
     startNewChat();
     setPendingFiles([]);
-  }, [startNewChat]);
+    clearFiles();
+  }, [startNewChat, clearFiles]);
 
   /**
    * Handle mode setup completion:
@@ -117,7 +127,7 @@ export default function App() {
       // Q&A mode: upload pending files first
       if (pendingFiles.length > 0) {
         try {
-          await uploadFiles(pendingFiles, mode);
+          const result = await uploadFiles(pendingFiles, mode, currentSessionId);
           setPendingFiles([]);
           // After upload, send a starter message
           await sendMessage("I have uploaded my documents. Let's begin Q&A.");
@@ -129,7 +139,14 @@ export default function App() {
       // Interview, Quiz, DSA: send setup context
       await sendSetupMessage(setupText);
     }
-  }, [mode, pendingFiles, uploadFiles, sendMessage, sendSetupMessage]);
+  }, [mode, pendingFiles, uploadFiles, currentSessionId, sendMessage, sendSetupMessage]);
+
+  /**
+   * Handle inline file upload from the FileUploadPanel (within an active session)
+   */
+  const handleInlineUpload = useCallback(async (files, uploadMode) => {
+    return uploadFiles(files, uploadMode, currentSessionId);
+  }, [uploadFiles, currentSessionId]);
 
   // Show wakeup screen if server is sleeping
   if (!isServerAwake) {
@@ -197,7 +214,7 @@ export default function App() {
             uploadedFiles={uploadedFiles}
             activeContext={activeContext}
             onToggleContext={toggleContextFile}
-            onUpload={uploadFiles}
+            onUpload={handleInlineUpload}
             isUploading={isUploading}
             uploadProgress={uploadProgress}
             mode={mode}

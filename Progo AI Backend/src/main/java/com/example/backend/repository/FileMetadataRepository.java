@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FileMetadataRepository extends MongoRepository<FileMetadata, String> {
     List<FileMetadata> findByUserId(String userId);
+    List<FileMetadata> findBySessionId(String sessionId);
+    List<FileMetadata> findByUserIdAndSessionId(String userId, String sessionId);
 }

@@ -10,15 +10,17 @@ public class FileMetadata {
     private String id;
     private String fileId;
     private String userId;
+    private String sessionId;
     private String filename;
     private String selectedMode;
     private Instant uploadTime;
 
     public FileMetadata() {}
 
-    public FileMetadata(String fileId, String userId, String filename, String selectedMode) {
+    public FileMetadata(String fileId, String userId, String sessionId, String filename, String selectedMode) {
         this.fileId = fileId;
         this.userId = userId;
+        this.sessionId = sessionId;
         this.filename = filename;
         this.selectedMode = selectedMode;
         this.uploadTime = Instant.now();
@@ -30,6 +32,8 @@ public class FileMetadata {
     public void setFileId(String fileId) { this.fileId = fileId; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
     public String getFilename() { return filename; }
     public void setFilename(String filename) { this.filename = filename; }
     public String getSelectedMode() { return selectedMode; }

@@ -7,9 +7,13 @@ export function useFiles() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fetchFiles = useCallback(async () => {
+  const fetchFiles = useCallback(async (sessionId = null) => {
     try {
-      const res = await client.get('/api/upload/files');
+      // If a sessionId is provided, fetch files for that specific session
+      const url = sessionId 
+        ? `/api/upload/files/${sessionId}` 
+        : '/api/upload/files';
+      const res = await client.get(url);
       const unique = [...new Set(res.data)];
       setUploadedFiles(unique);
       setActiveContext(unique);
@@ -26,7 +30,7 @@ export function useFiles() {
     );
   }, []);
 
-  const uploadFiles = useCallback(async (files, mode = 'qna') => {
+  const uploadFiles = useCallback(async (files, mode = 'qna', sessionId = null) => {
     if (!files || files.length === 0) return null;
 
     setIsUploading(true);
@@ -37,6 +41,9 @@ export function useFiles() {
       formData.append('files', file);
     });
     formData.append('mode', mode);
+    if (sessionId) {
+      formData.append('sessionId', sessionId);
+    }
 
     try {
       const res = await client.post('/api/upload', formData, {
@@ -49,7 +56,9 @@ export function useFiles() {
         },
       });
 
-      await fetchFiles();
+      // After upload, re-fetch files scoped to the session
+      const effectiveSessionId = sessionId || res.data?.sessionId;
+      await fetchFiles(effectiveSessionId);
       return res.data;
     } catch (err) {
       console.error('Error uploading files', err);
@@ -60,6 +69,11 @@ export function useFiles() {
     }
   }, [fetchFiles]);
 
+  const clearFiles = useCallback(() => {
+    setUploadedFiles([]);
+    setActiveContext([]);
+  }, []);
+
   return {
     uploadedFiles,
     activeContext,
@@ -68,5 +82,6 @@ export function useFiles() {
     fetchFiles,
     toggleContextFile,
     uploadFiles,
+    clearFiles,
   };
 }

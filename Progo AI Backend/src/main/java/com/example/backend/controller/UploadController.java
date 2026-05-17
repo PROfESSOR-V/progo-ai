@@ -59,6 +59,7 @@ public class UploadController {
     public ResponseEntity<Map<String, String>> uploadAndIngestFiles(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "mode", defaultValue = "qna") String mode,
+            @RequestParam(value = "sessionId", required = false) String sessionId,
             Authentication authentication) {
         
         String userId = (String) authentication.getPrincipal();
@@ -69,8 +70,22 @@ public class UploadController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        ChatSession session = new ChatSession("New Context Session", mode, userId);
-        List<String> ctxFiles = new ArrayList<>();
+        // Use existing session if sessionId is provided, otherwise create a new one
+        ChatSession session;
+        if (sessionId != null && !sessionId.isEmpty()) {
+            session = sessionRepository.findById(sessionId).orElseGet(() -> {
+                ChatSession newSession = new ChatSession("New Context Session", mode, userId);
+                return sessionRepository.save(newSession);
+            });
+        } else {
+            session = new ChatSession("New Context Session", mode, userId);
+            session = sessionRepository.save(session);
+        }
+
+        String effectiveSessionId = session.getId();
+        List<String> ctxFiles = session.getContextFiles() != null 
+            ? new ArrayList<>(session.getContextFiles()) 
+            : new ArrayList<>();
 
         try {
             for (MultipartFile file : files) {
@@ -80,7 +95,8 @@ public class UploadController {
                 Path dest = Paths.get(uploadDir, file.getOriginalFilename());
                 Files.write(dest, file.getBytes());
 
-                FileMetadata metadata = new FileMetadata(fileId, userId, file.getOriginalFilename(), mode);
+                // Store file metadata with sessionId for session-scoped association
+                FileMetadata metadata = new FileMetadata(fileId, userId, effectiveSessionId, file.getOriginalFilename(), mode);
                 fileMetadataRepository.save(metadata);
 
                 ProcessBuilder pb = new ProcessBuilder(
@@ -102,11 +118,12 @@ public class UploadController {
                 }
             }
 
+            // Update the session's context files with the newly uploaded files
             session.setContextFiles(ctxFiles);
-            ChatSession savedSession = sessionRepository.save(session);
+            sessionRepository.save(session);
 
             response.put("message", "Files uploaded and successfully ingested into Pinecone");
-            response.put("sessionId", savedSession.getId());
+            response.put("sessionId", effectiveSessionId);
             return ResponseEntity.ok(response);
 
         } catch (IOException | InterruptedException e) {
@@ -116,6 +133,27 @@ public class UploadController {
         }
     }
 
+    /**
+     * Get files for a specific session
+     */
+    @GetMapping("/files/{sessionId}")
+    public ResponseEntity<List<String>> listSessionFiles(
+            @PathVariable String sessionId,
+            Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        List<FileMetadata> sessionFiles = fileMetadataRepository.findByUserIdAndSessionId(userId, sessionId);
+        
+        List<String> fileNames = sessionFiles.stream()
+                .map(FileMetadata::getFilename)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(fileNames);
+    }
+
+    /**
+     * Get all files for the user (backwards compatibility)
+     */
     @GetMapping("/files")
     public ResponseEntity<List<String>> listUploadedFiles(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();

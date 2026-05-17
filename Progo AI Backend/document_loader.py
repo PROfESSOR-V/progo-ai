@@ -71,6 +71,18 @@ def load_json(file_path: str) -> List[Dict]:
         "char_count": len(text)
     }]
 
+def load_txt(file_path: str) -> List[Dict]:
+    """Load plain text files (.txt)"""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+    if not text.strip():
+        return []
+    return [{
+        "page_number": 1,
+        "text": text,
+        "char_count": len(text)
+    }]
+
 def load_document(file_path: str) -> Dict:
     """
     Extract text from supported document types with uniform metadata.
@@ -91,6 +103,9 @@ def load_document(file_path: str) -> Dict:
     elif ext == 'json':
         pages = load_json(file_path)
         source_type = 'json'
+    elif ext == 'txt':
+        pages = load_txt(file_path)
+        source_type = 'txt'
     else:
         raise ValueError(f"Unsupported file extension: {ext}")
 

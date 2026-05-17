@@ -106,7 +106,7 @@ class RAGPipeline:
     def run_directory(self, dir_path: str):
         try:
             folder = Path(dir_path)
-            supported_exts = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.json']
+            supported_exts = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.json', '.txt']
             
             files_to_process = [f for f in folder.glob("**/*") if f.is_file() and f.suffix.lower() in supported_exts]
             
