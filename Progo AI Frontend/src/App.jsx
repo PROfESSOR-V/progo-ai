@@ -9,11 +9,37 @@ import ChatArea from './components/chat/ChatArea';
 import ChatInput from './components/chat/ChatInput';
 import FileUploadPanel from './components/files/FileUploadPanel';
 import ModeSelector from './components/common/ModeSelector';
+import ServerWakeupScreen from './components/common/ServerWakeupScreen';
+import { API_BASE_URL } from './api/client';
 
 export default function App() {
   const { isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pendingFiles, setPendingFiles] = useState([]);
+  const [isServerAwake, setIsServerAwake] = useState(false);
+
+  // Poll the backend health endpoint
+  useEffect(() => {
+    if (isServerAwake) return;
+    let timeoutId;
+    const checkHealth = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+          method: 'GET',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        if (response.ok) {
+          setIsServerAwake(true);
+        } else {
+          timeoutId = setTimeout(checkHealth, 3000);
+        }
+      } catch (err) {
+        timeoutId = setTimeout(checkHealth, 3000);
+      }
+    };
+    checkHealth();
+    return () => clearTimeout(timeoutId);
+  }, [isServerAwake]);
 
   const {
     sessions,
@@ -102,6 +128,11 @@ export default function App() {
       await sendSetupMessage(setupText);
     }
   }, [mode, pendingFiles, uploadFiles, sendMessage, sendSetupMessage]);
+
+  // Show wakeup screen if server is sleeping
+  if (!isServerAwake) {
+    return <ServerWakeupScreen />;
+  }
 
   // Show auth screen if not logged in
   if (!isAuthenticated) {
