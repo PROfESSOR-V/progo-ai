@@ -2,7 +2,9 @@ package com.example.backend.service;
 
 import com.example.backend.model.ChatMessage;
 import com.example.backend.model.ChatSession;
+import com.example.backend.model.FileMetadata;
 import com.example.backend.repository.ChatSessionRepository;
+import com.example.backend.repository.FileMetadataRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -36,12 +38,14 @@ public class RagService {
     private String pineconeIndexHost;
 
     private final ChatSessionRepository sessionRepository;
+    private final FileMetadataRepository fileMetadataRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public RagService(ChatSessionRepository sessionRepository) {
+    public RagService(ChatSessionRepository sessionRepository, FileMetadataRepository fileMetadataRepository) {
         this.sessionRepository = sessionRepository;
+        this.fileMetadataRepository = fileMetadataRepository;
     }
 
     // ─────────────────────────────────────────────
@@ -69,6 +73,13 @@ public class RagService {
 
                 // Determine if RAG search is needed
                 String effectiveMode = session.getMode();
+
+                // Safety net: if Q&A session has no context files, try to auto-populate
+                if ("qna".equalsIgnoreCase(effectiveMode) && 
+                    (session.getContextFiles() == null || session.getContextFiles().isEmpty())) {
+                    autoPopulateContextFiles(session, userId);
+                }
+
                 boolean needsRag = needsRagSearch(effectiveMode, session);
 
                 String contextText = "";
@@ -452,10 +463,33 @@ public class RagService {
             return sessionRepository.findById(sessionId).orElseGet(() -> {
                 ChatSession newSession = new ChatSession("New Session", mode, userId);
                 newSession.setId(sessionId);
+                autoPopulateContextFiles(newSession, userId);
                 return sessionRepository.save(newSession);
             });
         }
-        return sessionRepository.save(new ChatSession("New Session", mode, userId));
+        ChatSession newSession = new ChatSession("New Session", mode, userId);
+        autoPopulateContextFiles(newSession, userId);
+        return sessionRepository.save(newSession);
+    }
+
+    /**
+     * Auto-populate context files from the user's uploaded file metadata.
+     * This ensures that Q&A sessions always have access to the user's documents,
+     * even when the session is created separately from the upload.
+     */
+    private void autoPopulateContextFiles(ChatSession session, String userId) {
+        try {
+            List<FileMetadata> userFiles = fileMetadataRepository.findByUserId(userId);
+            if (userFiles != null && !userFiles.isEmpty()) {
+                List<String> fileNames = userFiles.stream()
+                    .map(FileMetadata::getFilename)
+                    .distinct()
+                    .collect(Collectors.toList());
+                session.setContextFiles(fileNames);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to auto-populate context files: " + e.getMessage());
+        }
     }
 
     private String generateSessionTitle(String firstMessage, String mode) {
