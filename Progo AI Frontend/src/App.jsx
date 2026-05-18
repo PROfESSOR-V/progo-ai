@@ -54,6 +54,7 @@ export default function App() {
     selectSession,
     startNewChat,
     sendMessage,
+    sendMessageToSession,
     sendSetupMessage,
     deleteSession,
     renameSession,
@@ -90,14 +91,20 @@ export default function App() {
     // If there are pending files, upload them first
     if (pendingFiles.length > 0) {
       try {
-        await uploadFiles(pendingFiles, mode, currentSessionId);
+        const result = await uploadFiles(pendingFiles, mode, currentSessionId);
         setPendingFiles([]);
+        // If upload created a new session, send message to that session
+        const uploadSessionId = result?.sessionId;
+        if (uploadSessionId && !currentSessionId) {
+          await sendMessageToSession(text, uploadSessionId);
+          return;
+        }
       } catch {
         // Upload failed — still send the message
       }
     }
     await sendMessage(text);
-  }, [sendMessage, pendingFiles, uploadFiles, mode, currentSessionId]);
+  }, [sendMessage, sendMessageToSession, pendingFiles, uploadFiles, mode, currentSessionId]);
 
   const handleSuggestionClick = useCallback((text) => {
     handleSend(text);
@@ -129,8 +136,19 @@ export default function App() {
         try {
           const result = await uploadFiles(pendingFiles, mode, currentSessionId);
           setPendingFiles([]);
-          // After upload, send a starter message
-          await sendMessage("I have uploaded my documents. Let's begin Q&A.");
+          // Use the session ID from the upload response to ensure the chat
+          // message goes to the SAME session that owns the uploaded files
+          const uploadSessionId = result?.sessionId;
+          if (uploadSessionId) {
+            // Send the starter message to the exact session that has the files
+            await sendMessageToSession(
+              "I have uploaded my documents. Let's begin Q&A.",
+              uploadSessionId
+            );
+          } else {
+            // Fallback: send normally (shouldn't happen)
+            await sendMessage("I have uploaded my documents. Let's begin Q&A.");
+          }
         } catch {
           // Upload failed
         }
@@ -139,7 +157,7 @@ export default function App() {
       // Interview, Quiz, DSA: send setup context
       await sendSetupMessage(setupText);
     }
-  }, [mode, pendingFiles, uploadFiles, currentSessionId, sendMessage, sendSetupMessage]);
+  }, [mode, pendingFiles, uploadFiles, currentSessionId, sendMessage, sendMessageToSession, sendSetupMessage]);
 
   /**
    * Handle inline file upload from the FileUploadPanel (within an active session)

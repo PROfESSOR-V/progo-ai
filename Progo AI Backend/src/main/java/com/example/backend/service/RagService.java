@@ -81,6 +81,8 @@ public class RagService {
                 }
 
                 boolean needsRag = needsRagSearch(effectiveMode, session);
+                System.out.println("[RAG] Session=" + session.getId() + " mode=" + effectiveMode + 
+                    " needsRag=" + needsRag + " contextFiles=" + session.getContextFiles());
 
                 String contextText = "";
                 if (needsRag) {
@@ -475,27 +477,42 @@ public class RagService {
     /**
      * Auto-populate context files from the session's linked file metadata.
      * Only loads files associated with this specific session, not ALL user files.
-     * Falls back to all user files only if no session-scoped files exist (backwards compat).
+     * Falls back to the session's own stored contextFiles if DB lookup returns empty.
      */
     private void autoPopulateContextFiles(ChatSession session, String userId) {
         try {
             List<FileMetadata> files;
             
-            // First try session-scoped files
+            // First try session-scoped files from file metadata collection
             if (session.getId() != null) {
                 files = fileMetadataRepository.findByUserIdAndSessionId(userId, session.getId());
+                System.out.println("[RAG] autoPopulate: found " + (files != null ? files.size() : 0) + 
+                    " file metadata records for session=" + session.getId() + " user=" + userId);
             } else {
                 files = Collections.emptyList();
+                System.out.println("[RAG] autoPopulate: session has no ID yet, skipping DB lookup");
             }
             
-            // Fallback: if session has no files yet, don't pollute with ALL user files
-            // Only use session-specific files
             if (files != null && !files.isEmpty()) {
                 List<String> fileNames = files.stream()
                     .map(FileMetadata::getFilename)
                     .distinct()
                     .collect(Collectors.toList());
                 session.setContextFiles(fileNames);
+                System.out.println("[RAG] autoPopulate: set contextFiles=" + fileNames);
+            } else {
+                // Fallback: re-read the session from DB in case contextFiles were set during upload
+                // but lost in the in-memory session object
+                if (session.getId() != null) {
+                    Optional<ChatSession> freshSession = sessionRepository.findById(session.getId());
+                    if (freshSession.isPresent()) {
+                        List<String> storedFiles = freshSession.get().getContextFiles();
+                        if (storedFiles != null && !storedFiles.isEmpty()) {
+                            session.setContextFiles(storedFiles);
+                            System.out.println("[RAG] autoPopulate: recovered contextFiles from stored session=" + storedFiles);
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to auto-populate context files: " + e.getMessage());

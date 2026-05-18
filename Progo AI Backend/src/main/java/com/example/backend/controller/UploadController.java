@@ -83,6 +83,7 @@ public class UploadController {
         }
 
         String effectiveSessionId = session.getId();
+        System.out.println("[UPLOAD] userId=" + userId + " sessionId=" + effectiveSessionId + " mode=" + mode + " fileCount=" + files.length);
         List<String> ctxFiles = session.getContextFiles() != null 
             ? new ArrayList<>(session.getContextFiles()) 
             : new ArrayList<>();
@@ -115,6 +116,7 @@ public class UploadController {
                     System.err.println("Ingestion script failed for " + file.getOriginalFilename() + ". Exit code: " + exitCode);
                 } else {
                     ctxFiles.add(file.getOriginalFilename());
+                    System.out.println("[UPLOAD] Successfully ingested: " + file.getOriginalFilename() + " fileId=" + fileId + " sessionId=" + effectiveSessionId);
                 }
             }
 

@@ -46,6 +46,110 @@ export function useChat() {
     setMode('simple');
   }, []);
 
+  /**
+   * Send a message to a specific session by ID.
+   * Use this when you have a known sessionId that may not yet be in React state
+   * (e.g., right after an upload returns a new sessionId).
+   */
+  const sendMessageToSession = useCallback(async (text, targetSessionId) => {
+    if (!text.trim() || isLoading) return;
+
+    // Ensure we track this session going forward
+    if (targetSessionId) {
+      setCurrentSessionId(targetSessionId);
+    }
+
+    const userMessage = { role: 'user', content: text.trim() };
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    const effectiveSessionId = targetSessionId || currentSessionId;
+
+    try {
+      const payload = { message: text.trim(), mode };
+      const url = effectiveSessionId
+        ? `${API_BASE_URL}/api/chat/${effectiveSessionId}/message`
+        : `${API_BASE_URL}/api/chat/message`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      // Add empty assistant message placeholder
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      setIsLoading(false);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        
+        let boundary = buffer.indexOf('\n\n');
+        while (boundary !== -1) {
+            const block = buffer.substring(0, boundary);
+            buffer = buffer.substring(boundary + 2);
+            
+            let event = 'message';
+            let dataStr = '';
+            
+            const lines = block.split('\n');
+            for (const line of lines) {
+                if (line.startsWith('event:')) {
+                    event = line.substring(6).trim();
+                } else if (line.startsWith('data:')) {
+                    dataStr = line.substring(5).trim();
+                }
+            }
+            
+            if (dataStr) {
+                if (event === 'metadata') {
+                    try {
+                        const meta = JSON.parse(dataStr);
+                        if (meta.sessionId) {
+                            setCurrentSessionId(meta.sessionId);
+                            fetchSessions();
+                        }
+                    } catch(e) {}
+                } else if (event === 'message') {
+                    try {
+                        const data = JSON.parse(dataStr);
+                        setMessages(prev => {
+                            const newMessages = [...prev];
+                            const lastIdx = newMessages.length - 1;
+                            newMessages[lastIdx] = { 
+                                ...newMessages[lastIdx], 
+                                content: newMessages[lastIdx].content + data.content 
+                            };
+                            return newMessages;
+                        });
+                    } catch(e) {}
+                }
+            }
+            boundary = buffer.indexOf('\n\n');
+        }
+      }
+    } catch (err) {
+      console.error('Error sending message', err);
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: '❌ Something went wrong. Please try again.' },
+      ]);
+      setIsLoading(false);
+    }
+  }, [currentSessionId, mode, isLoading, fetchSessions]);
+
   const sendMessage = useCallback(async (text) => {
     if (!text.trim() || isLoading) return;
 
@@ -184,6 +288,7 @@ export function useChat() {
     selectSession,
     startNewChat,
     sendMessage,
+    sendMessageToSession,
     sendSetupMessage,
     deleteSession,
     renameSession,
